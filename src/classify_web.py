@@ -27,7 +27,7 @@ def compute_r(df):
         if (n_data + n_rand) > 0:
             r[i] = (n_data - n_rand) / (n_data + n_rand)
         else:
-            r[i] = 0.0
+            raise ValueError(f'No neighbors for point {i} in the triangulation.')
 
     out = df.copy()
     out['r'] = r
