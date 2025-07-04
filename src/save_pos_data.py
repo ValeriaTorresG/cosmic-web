@@ -3,6 +3,7 @@ from astropy.table import Table
 import numpy as np
 from astropy import units as u
 from astropy.cosmology import Planck18 as cosmo
+from astropy.coordinates import SkyCoord
 
 
 def spherical_to_cartesian(ra, dec, z):
@@ -15,6 +16,13 @@ def spherical_to_cartesian(ra, dec, z):
     z = d_z * np.sin(dec_rad)
 
     return (x, y, z)
+
+
+def spherical_to_cartesian_ast(ra, dec, z):
+    ra_deg, dec_deg = ra.data, dec.data
+    dc = cosmo.comoving_distance(z)
+    coords = SkyCoord(ra=ra_deg*u.deg, dec=dec_deg*u.deg, distance=dc)
+    return coords.cartesian.xyz.to(u.Mpc).value
 
 
 def write_rosette_ecsvs(data, rand_data, rosette_ids, out_dir):
