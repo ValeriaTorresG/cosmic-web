@@ -1,19 +1,14 @@
 import numpy as np
-import pandas as pd
 from scipy.spatial import Delaunay
+import pandas as pd
 from itertools import combinations
 
+
 def compute_r(df):
-    '''
-    Compute r for each point in the dataset using
-    r = (n_data - n_rand) / (n_data + n_rand)
-    '''
-    coords  = df[['X', 'Y', 'Z']].values
+    coords = df[['X', 'Y', 'Z']].values
     is_data = ~df['RAN'].values
 
     tri = Delaunay(coords)
-
-    #! adjacency list for neighbors
     neighbors = {i: set() for i in range(len(coords))}
     for simplex in tri.simplices:
         for i, j in combinations(simplex, 2):
@@ -34,9 +29,6 @@ def compute_r(df):
     return out
 
 def classify_r(df):
-    '''
-    Classify points based on the computed r value
-    '''
     r = df['r'].values
     conds = [(r >= -1.0) & (r <= -0.9),
              (r > -0.9) & (r <= 0.0),
@@ -46,3 +38,16 @@ def classify_r(df):
     df = df.copy()
     df['TYPE'] = np.select(conds, choices, default='error')
     return df
+
+def astra(data, rand):
+    data['RAN'] = False
+    rand['RAN'] = True
+    df = pd.concat([data, rand], ignore_index=True)
+
+    df_r = compute_r(df)
+    df_typed = classify_r(df_r)
+    coords2d = df_typed[['X','Y','Z']].values
+    tri = Delaunay(coords2d)
+
+    is_real = ~df_typed['RAN'].values
+    return df_typed, coords2d, tri, is_real
