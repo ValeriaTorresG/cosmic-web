@@ -44,6 +44,7 @@ def run_iterations(df_data, df_rand, n_iter, seed_offset):
 
         df_typed, _, _, is_real = astra(df_data.copy(), sub_rand.copy())
         labels = df_typed.loc[is_real, 'TYPE'].values
+        r = df_typed.loc[is_real, 'r'].values #!!! TODO falta poner que quede r en el df final
         idx_map = [TYPES.index(lbl) for lbl in labels]
 
         counts[np.arange(Np), idx_map] += 1
