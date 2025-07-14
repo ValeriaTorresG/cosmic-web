@@ -5,6 +5,7 @@ import pandas as pd
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import time as t
 
+#takes 3 min
 project_root = os.path.dirname(os.path.dirname(__file__))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
@@ -37,13 +38,14 @@ def load_data(rosette: int, base_url: str):
 def run_iterations(df_data, df_rand, n_iter, seed_offset):
     Np = len(df_data)
     counts = np.zeros((Np, len(TYPES)), dtype=int)
-    r_list = None  # Para guardar r en la primera iteración
+    r_list = None
 
     for it in range(n_iter):
         idx = np.random.choice(len(df_rand), size=Np, replace=False)
         sub_rand = df_rand.iloc[idx].reset_index(drop=True)
 
-        df_typed, _, _, is_real = astra(df_data.copy(), sub_rand.copy())
+        #! aqui guardo la triangulacion, falta hacer como r y guardarla para luego hacer fof
+        df_typed, _, tri, is_real = astra(df_data.copy(), sub_rand.copy())
         labels = df_typed.loc[is_real, 'TYPE'].values
         r = df_typed.loc[is_real, 'r'].values
 
