@@ -63,7 +63,7 @@ def save_results(rosette, df_data, p_w, H, out_dir):
 
 
 def process_rosette(rosette, base_url, out_dir):
-    print(f'--------- Processing rosette {rosette} -----------')
+    # print(f'--------- Processing rosette {rosette} -----------')
     df_data, df_rand = load_data(rosette, base_url)
     counts = run_iterations(df_data, df_rand, N_ITER, seed_offset=rosette)
     p_w = counts.astype(float) / N_ITER
