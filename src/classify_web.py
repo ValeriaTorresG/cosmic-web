@@ -20,7 +20,7 @@ def compute_r(df):
         n_data = int(np.sum(is_data[list(nbrs)]))
         n_rand = len(nbrs) - n_data
         if (n_data + n_rand) > 0:
-            r[i] = (n_data - n_rand) / (n_data + n_rand) 
+            r[i] = (n_data - n_rand) / (n_data + n_rand)
         else:
             raise ValueError(f'No neighbors for point {i} in the triangulation.')
 

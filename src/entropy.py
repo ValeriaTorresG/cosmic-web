@@ -57,7 +57,6 @@ def run_iterations(df_data, df_rand, n_iter, seed_offset):
 
 
 def save_results(rosette, df_data, p_w, H, r_list, out_dir):
-    # determinamos el tipo final como aquel con probabilidad máxima
     final_types = [TYPES[i] for i in np.argmax(p_w, axis=1)]
 
     df_out = pd.DataFrame({

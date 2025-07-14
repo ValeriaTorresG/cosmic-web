@@ -7,7 +7,6 @@ from astropy.coordinates import SkyCoord
 
 np.random.seed(42)
 
-
 def spherical_to_cartesian(ra, dec, z):
     r = cosmo.comoving_distance(z).to(u.Mpc).value
     phi = np.radians(ra)
@@ -16,7 +15,6 @@ def spherical_to_cartesian(ra, dec, z):
     y = r * np.sin(theta) * np.sin(phi)
     z = r * np.cos(theta)
     return (x, y, z)
-
 
 def spherical_to_cartesian_ast(ra, dec, z):
     ra_deg, dec_deg = ra.data, dec.data
@@ -43,40 +41,30 @@ def write_rosettes(base_dir, out_dir):
             for rosette in rosette_ids:
 
                 rosette_dat = data[data['ROSETTE_NUMBER'] == rosette]
-                x_d, y_d, z_d = spherical_to_cartesian_ast(
-                    rosette_dat['RA'], rosette_dat['DEC'], rosette_dat['Z']
-                )
-                tab_data = Table(
-                    [rosette_dat['TARGETID'], rosette_dat['Z'], x_d, y_d, z_d],
-                    names=('TARGETID','z','X','Y','Z')
-                )
-                tab_data.write(
-                    os.path.join(out_dir, f'ELG_{hemi}_{rosette}_clustering_data.ecsv'),
-                    overwrite=True
-                )
+                x_d, y_d, z_d = spherical_to_cartesian_ast(rosette_dat['RA'],
+                                                           rosette_dat['DEC'],
+                                                           rosette_dat['Z'])
+                tab_data = Table([rosette_dat['TARGETID'], rosette_dat['Z'], x_d, y_d, z_d],
+                                 names=('TARGETID','z','X','Y','Z'))
+                tab_data.write(os.path.join(out_dir, f'ELG_{hemi}_{rosette}_clustering_data.ecsv'),
+                               overwrite=True)
 
-                partes = [
-                    rt[rt['ROSETTE_NUMBER'] == rosette]
-                    for rt in rand_tables
-                ]
-                partes = [p for p in partes if len(p) > 0]
+                parts = [rt[rt['ROSETTE_NUMBER'] == rosette]
+                         for rt in rand_tables]
+                parts = [p for p in parts if len(p) > 0]
 
-                if partes:
-                    all_rand = vstack(partes)
-                    x_r, y_r, z_r = spherical_to_cartesian_ast(
-                        all_rand['RA'], all_rand['DEC'], all_rand['Z']
-                    )
-                    tab_rand = Table(
-                        [all_rand['TARGETID'], all_rand['Z'], x_r, y_r, z_r],
-                        names=('TARGETID','z','X','Y','Z')
-                    )
+                if parts:
+                    all_rand = vstack(parts)
+                    x_r, y_r, z_r = spherical_to_cartesian_ast(all_rand['RA'],
+                                                               all_rand['DEC'],
+                                                               all_rand['Z'])
+                    tab_rand = Table([all_rand['TARGETID'], all_rand['Z'], x_r,
+                                      y_r, z_r], names=('TARGETID','z','X','Y','Z'))
                 else:
                     tab_rand = Table(names=('TARGETID','z','X','Y','Z'))
 
-                tab_rand.write(
-                    os.path.join(out_dir, f'ELG_{rosette}_clustering_rand.ecsv'),
-                    overwrite=True
-                )
+                tab_rand.write(os.path.join(out_dir, f'ELG_{rosette}_clustering_rand.ecsv'),
+                               overwrite=True)
 
 def write_rosette(data, rand_data, rosette_ids, out_dir):
     os.makedirs(out_dir, exist_ok=True)
@@ -89,26 +77,21 @@ def write_rosette(data, rand_data, rosette_ids, out_dir):
             rosette_dat = data[mask_d]
             rosette_rand = rand_data[mask_r]
 
-            indices = np.random.choice(len(rosette_rand),
-                                       size=len(rosette_dat),
+            indices = np.random.choice(len(rosette_rand), size=len(rosette_dat),
                                        replace=False)
             subset_rand = rosette_rand[indices]
 
-            x_data, y_data, z_data = spherical_to_cartesian(
-                rosette_dat['RA'], rosette_dat['DEC'], rosette_dat['Z']
-            )
-            x_rand, y_rand, z_rand = spherical_to_cartesian(
-                subset_rand['RA'], subset_rand['DEC'], subset_rand['Z']
-            )
+            x_data, y_data, z_data = spherical_to_cartesian(rosette_dat['RA'],
+                                                            rosette_dat['DEC'],
+                                                            rosette_dat['Z'])
+            x_rand, y_rand, z_rand = spherical_to_cartesian(subset_rand['RA'],
+                                                            subset_rand['DEC'],
+                                                            subset_rand['Z'])
 
-            tab_data = Table(
-                [rosette_dat['TARGETID'], x_data, y_data, z_data],
-                names=('targetid', 'x', 'y', 'z')
-            )
-            tab_rand = Table(
-                [subset_rand['TARGETID'], x_rand, y_rand, z_rand],
-                names=('targetid', 'x', 'y', 'z')
-            )
+            tab_data = Table([rosette_dat['TARGETID'], x_data, y_data, z_data],
+                             names=('targetid', 'x', 'y', 'z'))
+            tab_rand = Table([subset_rand['TARGETID'], x_rand, y_rand, z_rand],
+                             names=('targetid', 'x', 'y', 'z'))
 
             data_out = os.path.join(out_dir,
                 f'ELG_{rosette}_clustering_data.ecsv')
