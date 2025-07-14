@@ -11,6 +11,8 @@ if project_root not in sys.path:
 from src.classify_web import astra
 
 NP_RANDOM_SEED = 42
+np.random.seed(NP_RANDOM_SEED)
+
 N_ITER = 100
 ROSETTE_IDS = range(20)
 TYPES = ['void','sheet','filament','knot']
@@ -33,29 +35,39 @@ def load_data(rosette: int, base_url: str):
 
 
 def run_iterations(df_data, df_rand, n_iter, seed_offset):
-    # np.random.seed(NP_RANDOM_SEED + seed_offset)
     Np = len(df_data)
     counts = np.zeros((Np, len(TYPES)), dtype=int)
+    r_list = None  # Para guardar r en la primera iteración
 
     for it in range(n_iter):
-        # print(f'Iteration {it + 1}/{n_iter} for rosette {seed_offset}')
-        idx = np.random.choice(len(df_rand), size= Np, replace=False)
+        idx = np.random.choice(len(df_rand), size=Np, replace=False)
         sub_rand = df_rand.iloc[idx].reset_index(drop=True)
 
         df_typed, _, _, is_real = astra(df_data.copy(), sub_rand.copy())
         labels = df_typed.loc[is_real, 'TYPE'].values
-        r = df_typed.loc[is_real, 'r'].values #!!! TODO falta poner que quede r en el df final
-        idx_map = [TYPES.index(lbl) for lbl in labels]
+        r = df_typed.loc[is_real, 'r'].values
 
+        if it == 0:
+            r_list = r
+
+        idx_map = [TYPES.index(lbl) for lbl in labels]
         counts[np.arange(Np), idx_map] += 1
 
-    return counts
+    return counts, r_list
 
 
-def save_results(rosette, df_data, p_w, H, out_dir):
-    df_out = pd.DataFrame({'TARGETID': df_data['TARGETID'],
-                           **{f'p_{t}': p_w[:, i] for i, t in enumerate(TYPES)},
-                           'H': H})
+def save_results(rosette, df_data, p_w, H, r_list, out_dir):
+    # determinamos el tipo final como aquel con probabilidad máxima
+    final_types = [TYPES[i] for i in np.argmax(p_w, axis=1)]
+
+    df_out = pd.DataFrame({
+        'TARGETID': df_data['TARGETID'],
+        'r': r_list,
+        'type': final_types,
+        **{f'p_{t}': p_w[:, i] for i, t in enumerate(TYPES)},
+        'H': H
+    })
+
     filename = f'rosette_{rosette}.csv'
     path = os.path.join(out_dir, filename)
     df_out.to_csv(path, index=False)
@@ -65,10 +77,10 @@ def save_results(rosette, df_data, p_w, H, out_dir):
 def process_rosette(rosette, base_url, out_dir):
     print(f'--------- Processing rosette {rosette} -----------')
     df_data, df_rand = load_data(rosette, base_url)
-    counts = run_iterations(df_data, df_rand, N_ITER, seed_offset=rosette)
+    counts, r_list = run_iterations(df_data, df_rand, N_ITER, seed_offset=rosette)
     p_w = counts.astype(float) / N_ITER
     H = entropy(p_w)
-    return save_results(rosette, df_data, p_w, H, out_dir)
+    return save_results(rosette, df_data, p_w, H, r_list, out_dir)
 
 
 def main():
@@ -78,7 +90,6 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
 
     max_workers = max(1, os.cpu_count() - 1)
-
     with ProcessPoolExecutor(max_workers=max_workers) as exe:
         futures = {exe.submit(process_rosette, r, base_url, out_dir): r
                    for r in ROSETTE_IDS}
@@ -89,7 +100,8 @@ def main():
                 print(f'Rosette {r} results in {path}')
             except Exception as e:
                 print(f'Error {r}: {e}')
-    print(f'time {initial-t.time()} sec')
+
+    print(f'Total time: {t.time() - initial:.2f} sec')
 
 
 if __name__ == '__main__':
