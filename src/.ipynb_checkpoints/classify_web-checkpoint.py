@@ -20,13 +20,14 @@ def compute_r(df):
         n_data = int(np.sum(is_data[list(nbrs)]))
         n_rand = len(nbrs) - n_data
         if (n_data + n_rand) > 0:
-            r[i] = (n_data - n_rand) / (n_data + n_rand) 
+            r[i] = (n_data - n_rand) / (n_data + n_rand)
         else:
             raise ValueError(f'No neighbors for point {i} in the triangulation.')
 
     out = df.copy()
     out['r'] = r
     return out
+
 
 def classify_r(df):
     r = df['r'].values
@@ -38,6 +39,7 @@ def classify_r(df):
     df = df.copy()
     df['TYPE'] = np.select(conds, choices, default='error')
     return df
+
 
 def astra(data, rand):
     data['RAN'] = False

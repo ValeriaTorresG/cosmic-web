@@ -28,6 +28,7 @@ def compute_r(df):
     out['r'] = r
     return out
 
+
 def classify_r(df):
     r = df['r'].values
     conds = [(r >= -1.0) & (r <= -0.9),
@@ -38,6 +39,7 @@ def classify_r(df):
     df = df.copy()
     df['TYPE'] = np.select(conds, choices, default='error')
     return df
+
 
 def astra(data, rand):
     data['RAN'] = False
