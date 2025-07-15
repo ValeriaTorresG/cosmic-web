@@ -16,8 +16,8 @@ for rosette in $(seq 0 19); do
     --posfile     "${RESULTS_DIR}/rosette_${rosette}_pos.txt" \
     --pairfile    "${RESULTS_DIR}/rosette_${rosette}_pairs.txt" \
     --countfile   "${RESULTS_DIR}/rosette_${rosette}_counts.txt" \
-    --webtype      knot \
-    --catalogfile "${CATALOGS_DIR}/rosette_knot_${rosette}_catalog_all.csv"
+    --webtype      void \
+    --catalogfile "${CATALOGS_DIR}/rosette_${rosette}_catalog_all.csv"
 done
 
 echo "----- Funcionaaaa, guarda en ${CATALOGS_DIR}"

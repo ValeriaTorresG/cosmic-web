@@ -64,7 +64,7 @@ def compute_group_properties(groups, pos):
     for gid, members in groups.items():
         x,y,z = pos[members].T
         # print(x)
-        if len(x)>0: 
+        if len(x)>4: 
             r = np.sqrt(x*x+y*y+z*z)
             
             props['N'].append(len(members))
@@ -108,7 +108,7 @@ if __name__=='__main__':
     p.add_argument('--countfile',  required=True)
     p.add_argument('--webtype',    default='all')
     p.add_argument('--catalogfile',required=True)
-    p.add_argument('--void_limit',  type=float, default=-0.9)
+    p.add_argument('--void_limit',  type=float, default=-0.5)
     p.add_argument('--knot_limit',  type=float, default=0.9)
     args = p.parse_args()
     make_catalog(**vars(args))
