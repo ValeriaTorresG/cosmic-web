@@ -3,7 +3,7 @@ set -e
 cd "$(dirname "$0")"/..
 
 echo "Running pos,count,pairs"
-# python src/entropy.py
+python src/entropy.py
 
 RESULTS_DIR="data/results"
 CATALOGS_DIR="data/catalogs"
