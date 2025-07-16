@@ -64,8 +64,9 @@ def compute_group_properties(groups, pos):
     for gid, members in groups.items():
         x,y,z = pos[members].T
         # print(x)
-        if len(x)>0:
+        if len(x)>0: 
             r = np.sqrt(x*x+y*y+z*z)
+            
             props['N'].append(len(members))
             props['MEAN_X'].append(x.mean()); props['MEAN_Y'].append(y.mean()); props['MEAN_Z'].append(z.mean())
             props['SIGMA_X'].append(x.std());   props['SIGMA_Y'].append(y.std());   props['SIGMA_Z'].append(z.std())
@@ -77,7 +78,7 @@ def compute_group_properties(groups, pos):
 
 def make_catalog(posfile, pairfile, countfile, catalogfile, webtype,
                  void_limit=-0.9, knot_limit=0.9):
-    # init_t = t.time()
+    init_t = t.time()
     pos    = np.loadtxt(posfile)
     pairs  = np.loadtxt(pairfile).astype(int)
     counts = np.loadtxt(countfile).astype(int)
@@ -86,7 +87,7 @@ def make_catalog(posfile, pairfile, countfile, catalogfile, webtype,
         np.savetxt(catalogfile, web, fmt='%d')
         return
 
-    wt2id = {'void':0,'sheet':1,'filament':2,'knot':3}
+    wt2id = {'void':0,'sheet':1,'filament':2,'peak':3}
     wid = wt2id[webtype]
     Np  = len(pos)
     assert len(web)==Np and pairs.min()>=0 and pairs.max()<Np
@@ -98,7 +99,7 @@ def make_catalog(posfile, pairfile, countfile, catalogfile, webtype,
     props  = compute_group_properties(groups, pos)
     df = pd.DataFrame.from_dict(props)
     df.to_csv(catalogfile, index=False)
-    # print(f'Catalog t: {init_t-t.time()} s')
+    print(f'Catalog t: {init_t-t.time()} s')
 
 if __name__=='__main__':
     p = argparse.ArgumentParser()
@@ -108,6 +109,6 @@ if __name__=='__main__':
     p.add_argument('--webtype',    default='all')
     p.add_argument('--catalogfile',required=True)
     p.add_argument('--void_limit',  type=float, default=-0.9)
-    p.add_argument('--knot_limit',  type=float, default=0.5)
+    p.add_argument('--knot_limit',  type=float, default=0.9)
     args = p.parse_args()
     make_catalog(**vars(args))
