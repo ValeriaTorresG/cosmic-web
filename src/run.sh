@@ -3,7 +3,7 @@ set -e
 cd "$(dirname "$0")"/..
 
 echo "Running pos,count,pairs"
-# python src/entropy.py
+python src/entropy.py
 
 RESULTS_DIR="data/results"
 CATALOGS_DIR="data/catalogs"
@@ -16,8 +16,8 @@ for rosette in $(seq 0 19); do
     --posfile     "${RESULTS_DIR}/rosette_${rosette}_pos.txt" \
     --pairfile    "${RESULTS_DIR}/rosette_${rosette}_pairs.txt" \
     --countfile   "${RESULTS_DIR}/rosette_${rosette}_counts.txt" \
-    --webtype      knot \
-    --catalogfile "${CATALOGS_DIR}/rosette_knot_${rosette}_catalog_all.csv"
+    --webtype      filament \
+    --catalogfile "${CATALOGS_DIR}/rosette_filament_${rosette}_catalog_all.csv"
 done
 
 echo "----- Funcionaaaa, guarda en ${CATALOGS_DIR}"

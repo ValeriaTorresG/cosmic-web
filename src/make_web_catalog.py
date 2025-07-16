@@ -87,7 +87,7 @@ def make_catalog(posfile, pairfile, countfile, catalogfile, webtype,
         np.savetxt(catalogfile, web, fmt='%d')
         return
 
-    wt2id = {'void':0,'sheet':1,'filament':2,'peak':3}
+    wt2id = {'void':0,'sheet':1,'filament':2,'knot':3}
     wid = wt2id[webtype]
     Np  = len(pos)
     assert len(web)==Np and pairs.min()>=0 and pairs.max()<Np
