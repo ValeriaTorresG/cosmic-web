@@ -46,7 +46,6 @@ def save_positions(rosette: int, df_data: pd.DataFrame, out_dir: str) -> str:
 
 
 def compute_counts(df_data: pd.DataFrame, df_rand: pd.DataFrame):
-    # toma una submuestra aleatoria de tamaño Np
     Np = len(df_data)
     sub_rand = df_rand.sample(n= Np, random_state=NP_RANDOM_SEED).reset_index(drop=True)
     df_all = pd.concat([
@@ -83,7 +82,6 @@ def save_counts(rosette: int, n_data: np.ndarray, n_rand: np.ndarray, out_dir: s
 
 
 def save_pairs(rosette: int, df_data: pd.DataFrame, out_dir: str) -> str:
-    # triangulación sobre los datos reales
     coords = df_data[['X','Y','Z']].values
     tri = Delaunay(coords)
     pairs = set()
@@ -121,8 +119,7 @@ def run_iterations(df_data, df_rand, n_iter, rosette):
 def save_results(rosette, df_data, p_w, H, r_list, out_dir):
     final_types = [TYPES[i] for i in np.argmax(p_w, axis=1)]
     df_out = pd.DataFrame({
-        'TARGETID': df_data['TARGETID'],
-        'r': r_list,
+        'TARGETID': df_data['TARGETID'], 'r': r_list,
         'type': final_types,
         **{f'p_{t}': p_w[:,i] for i,t in enumerate(TYPES)},
         'H': H

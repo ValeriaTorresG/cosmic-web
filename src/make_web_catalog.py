@@ -8,49 +8,47 @@ sys.setrecursionlimit(20000)
 def web_classification(n_data, n_random, void_limit=-0.9, knot_limit=0.9):
     assert len(n_data)==len(n_random)
     r = (n_data-n_random)/(n_data+n_random)
-    web = np.zeros(len(r),dtype=int)
-    web[r<=void_limit] = 0
-    web[(r>void_limit)&(r<=0)]    = 1
-    web[(r>0)&(r<=knot_limit)]    = 2
-    web[r>knot_limit]             = 3
+    web = np.zeros(len(r), dtype=int)
+    web[r <= void_limit] = 0
+    web[(r > void_limit) & (r <= 0)] = 1
+    web[(r > 0) & (r <= knot_limit)] = 2
+    web[r > knot_limit] = 3
     return web
 
 def find_friends(first_id, all_ids, pair_ids, included_ids):
-    group=[]
-    loc = np.where(all_ids==first_id)[0][0]
+    group = []
+    loc = np.where(all_ids == first_id)[0][0]
     if included_ids[loc]: return group
-    included_ids[loc]=1
+    included_ids[loc] = 1
     group.append(first_id)
-    friends = list(pair_ids[pair_ids[:,0]==first_id,1]) + list(pair_ids[pair_ids[:,1]==first_id,0])
+    friends = list(pair_ids[pair_ids[:, 0] == first_id, 1]) + list(pair_ids[pair_ids[:, 1] == first_id, 0])
     for f in friends:
-        group+= [f]
-        group+= find_friends(f, all_ids, pair_ids, included_ids)
+        group += [f]
+        group += find_friends(f, all_ids, pair_ids, included_ids)
     group = sorted(set(group))
     return group
 
 def find_fof_groups(pairs):
     pairs = pairs.astype(int)
     all_ids = np.unique(pairs)
-    groups={}
+    groups = {}
     inc = np.zeros(len(all_ids),dtype=int)
-    gid=0; total=0
+    gid, total = 0, 0
     for fid in all_ids:
         fof = find_friends(fid, all_ids, pairs, inc)
         if fof:
             groups[gid]=fof
-            total+=len(fof)
-            gid+=1
-    assert total==len(all_ids)
+            total += len(fof)
+            gid+ = 1
+    assert total == len(all_ids)
     return groups
 
 def inertia_tensor(x,y,z):
     x,y,z = x-np.mean(x), y-np.mean(y), z-np.mean(z)
     r2 = x*x+y*y+z*z
-    I = np.array([
-      [np.sum(r2 - x*x), -np.sum(x*y),   -np.sum(x*z)],
-      [-np.sum(y*x),     np.sum(r2 - y*y), -np.sum(y*z)],
-      [-np.sum(z*x),     -np.sum(z*y),    np.sum(r2 - z*z)]
-    ])
+    I = np.array([[np.sum(r2 - x*x), -np.sum(x*y), -np.sum(x*z)],
+                   [-np.sum(y*x), np.sum(r2 - y*y), -np.sum(y*z)],
+                   [-np.sum(z*x), -np.sum(z*y), np.sum(r2 - z*z)]])
     vals, vecs = np.linalg.eig(I)
     idx = np.argsort(-vals)
     return np.sqrt(vals[idx]), vecs[:,idx]
@@ -64,9 +62,8 @@ def compute_group_properties(groups, pos):
     for gid, members in groups.items():
         x,y,z = pos[members].T
         # print(x)
-        if len(x)>0: 
+        if len(x) > 4:
             r = np.sqrt(x*x+y*y+z*z)
-            
             props['N'].append(len(members))
             props['MEAN_X'].append(x.mean()); props['MEAN_Y'].append(y.mean()); props['MEAN_Z'].append(z.mean())
             props['SIGMA_X'].append(x.std());   props['SIGMA_Y'].append(y.std());   props['SIGMA_Z'].append(z.std())
@@ -109,6 +106,6 @@ if __name__=='__main__':
     p.add_argument('--webtype',    default='all')
     p.add_argument('--catalogfile',required=True)
     p.add_argument('--void_limit',  type=float, default=-0.9)
-    p.add_argument('--knot_limit',  type=float, default=0.9)
+    p.add_argument('--knot_limit',  type=float, default=0.5)
     args = p.parse_args()
     make_catalog(**vars(args))
