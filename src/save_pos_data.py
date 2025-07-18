@@ -8,6 +8,8 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 import time, gzip, shutil
 import random
 
+#! goes from 55GB to 8.6GB
+
 RAND_FILES = None
 LEN_DATA = None
 
@@ -15,8 +17,13 @@ def seed_main():
     np.random.seed(42)
     random.seed(42)
 
-# goes from 55GB to 8.6GB
+
 def spherical_to_cartesian_ast(ra, dec, z):
+    '''
+    Convert spherical coordinates (RA, DEC, Z) to Cartesian coordinates (X, Y, Zc).
+    RA and DEC are in degrees, Z is redshift.
+    Returns X, Y, Zc in Mpc.
+    '''
     ra_vals = ra.data if hasattr(ra, 'data') else ra
     dec_vals = dec.data if hasattr(dec, 'data') else dec
     dc = cosmo.comoving_distance(z)
@@ -26,6 +33,9 @@ def spherical_to_cartesian_ast(ra, dec, z):
 
 
 def init_worker(rand_files, len_data):
+    '''
+    Initialize worker with random files and length of data.
+    '''
     global RAND_FILES, LEN_DATA
     RAND_FILES = rand_files
     LEN_DATA = len_data
@@ -34,6 +44,9 @@ def init_worker(rand_files, len_data):
 
 
 def process_run(run_idx, out_path):
+    '''
+    Process a single run to generate random samples.
+    '''
     file_path = random.choice(RAND_FILES)
     rand_table = Table.read(file_path)
     total = len(rand_table)
@@ -54,6 +67,12 @@ def process_run(run_idx, out_path):
 
 
 def write_data_randoms(base_dir, out_dir, n_runs):
+    '''
+    Write data and random samples to output directory.
+    base_dir: Directory containing the input data files.
+    out_dir: Directory where the output files will be saved.
+    n_runs: Number of random samples to generate.
+    '''
     os.makedirs(out_dir, exist_ok=True)
     seed_main()
     start_all = time.time()
@@ -102,7 +121,7 @@ def write_data_randoms(base_dir, out_dir, n_runs):
 
 
 if __name__=='__main__':
-    parser = argparse.ArgumentParser()
+    parsesr = argparse.ArgumentParser()
     parser.add_argument('--base_dir', default='/pscratch/sd/v/vtorresg/cosmic-web/data/dr1/raw/')
     parser.add_argument('--out_dir', default='/pscratch/sd/v/vtorresg/cosmic-web/data/dr1/results/')
     parser.add_argument('--n_runs', type=int, default=100)

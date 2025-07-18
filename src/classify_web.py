@@ -5,6 +5,9 @@ from itertools import combinations
 
 
 def compute_r(df):
+    '''
+    Compute the local density contrast for each point in the dataframe.
+    '''
     coords = df[['X', 'Y', 'Z']].values
     is_data = ~df['RAN'].values
 
@@ -30,6 +33,9 @@ def compute_r(df):
 
 
 def classify_r(df):
+    '''
+    Classify based on 'r'.
+    '''
     r = df['r'].values
     conds = [(r >= -1.0) & (r <= -0.9),
              (r > -0.9) & (r <= 0.0),
@@ -42,6 +48,11 @@ def classify_r(df):
 
 
 def astra(data, rand):
+    '''
+    Classify the data and random points, compute r,
+    and return the classified dataframe, coordinates, triangulation,
+    and a boolean mask for real points.
+    '''
     data['RAN'] = False
     rand['RAN'] = True
     df = pd.concat([data, rand], ignore_index=True)

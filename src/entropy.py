@@ -129,7 +129,7 @@ def main():
     for hemi in HEMIS:
         tasks = [(hemi, run, base_dir, out_dir) for run in range(N_ITER)]
         max_workers = 50#min(4, os.cpu_count() - 1)
-        print(f"Processing zone {hemi} with {len(tasks)} tasks on {max_workers} workers...")
+        print(f"Processing {hemi} with {len(tasks)} tasks on {max_workers} processes")
         with ProcessPoolExecutor(max_workers=max_workers, mp_context=mp.get_context('spawn')) as executor:
             futures = {executor.submit(process_zone_run, *args): args[1] for args in tasks}
             for fut in as_completed(futures):

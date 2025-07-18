@@ -6,6 +6,14 @@ import time as t
 sys.setrecursionlimit(20000)
 
 def web_classification(n_data, n_random, void_limit=-0.9, knot_limit=0.9):
+    '''
+    Classify the web type based on the ratio of data to random counts.
+    Returns an array where:
+    - 0: void
+    - 1: sheet
+    - 2: filament
+    - 3: knot
+    '''
     assert len(n_data) == len(n_random)
     r = (n_data - n_random) / (n_data + n_random)
     web = np.zeros(len(r), dtype=int)
@@ -16,6 +24,10 @@ def web_classification(n_data, n_random, void_limit=-0.9, knot_limit=0.9):
     return web
 
 def find_friends(first_id, all_ids, pair_ids, included_ids):
+    '''
+    Recursively find all friends of a given ID in the pair_ids array.
+    Returns a list of IDs that are friends with the first_id.
+    '''
     group = []
     loc = np.where(all_ids == first_id)[0][0]
     if included_ids[loc]: return group
@@ -29,6 +41,10 @@ def find_friends(first_id, all_ids, pair_ids, included_ids):
     return group
 
 def find_fof_groups(pairs):
+    '''
+    Find friends-of-friends groups in the pairs array.
+    Returns a dictionary where keys are group IDs and values are lists of member IDs.
+    '''
     pairs = pairs.astype(int)
     all_ids = np.unique(pairs)
     groups = {}
@@ -44,6 +60,10 @@ def find_fof_groups(pairs):
     return groups
 
 def inertia_tensor(x,y,z):
+    '''
+    Compute the inertia tensor for a set of points in 3D space.
+    Returns the eigenvalues and eigenvectors of the tensor.
+    '''
     x,y,z = x-np.mean(x), y-np.mean(y), z-np.mean(z)
     r2 = x*x+y*y+z*z
     I = np.array([[np.sum(r2 - x*x), -np.sum(x*y), -np.sum(x*z)],
@@ -54,6 +74,9 @@ def inertia_tensor(x,y,z):
     return np.sqrt(vals[idx]), vecs[:,idx]
 
 def compute_group_properties(groups, pos):
+    '''
+    Compute properties of groups based on their positions.
+    '''
     props = {k:[] for k in ['N','MEAN_X','MEAN_Y','MEAN_Z',
                             'SIGMA_X','SIGMA_Y','SIGMA_Z','SIGMA_R',
                             'LAMBDA_1','LAMBDA_2','LAMBDA_3',
@@ -74,6 +97,10 @@ def compute_group_properties(groups, pos):
 
 def make_catalog(posfile, pairfile, countfile, catalogfile, webtype,
                  void_limit=-0.9, knot_limit=0.9):
+    '''
+    Create a catalog of cosmic web structures based on positions, pairs, and counts.
+    The catalog will contain properties of the structures classified by web type.
+    '''
     # init_t = t.time()
     pos = np.loadtxt(posfile)
     pairs = np.loadtxt(pairfile).astype(int)
