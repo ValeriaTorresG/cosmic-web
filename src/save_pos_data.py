@@ -15,7 +15,7 @@ def seed_main():
     np.random.seed(42)
     random.seed(42)
 
-
+# goes from 55GB to 8.6GB
 def spherical_to_cartesian_ast(ra, dec, z):
     ra_vals = ra.data if hasattr(ra, 'data') else ra
     dec_vals = dec.data if hasattr(dec, 'data') else dec
@@ -46,14 +46,14 @@ def process_run(run_idx, out_path):
                       names=('TARGETID','Z','X','Y','Zc'))
 
     tmp = out_path.replace('.gz','')
-    out_table.write(tmp, format='fits', overwrite=True)
+    out_table.write(tmp, format='fits', overwrite = True)
     with open(tmp,'rb') as fin, gzip.open(out_path,'wb') as fout:
         shutil.copyfileobj(fin, fout)
     os.remove(tmp)
     return run_idx
 
 
-def write_zone_data_randoms(base_dir, out_dir, n_runs):
+def write_data_randoms(base_dir, out_dir, n_runs):
     os.makedirs(out_dir, exist_ok=True)
     seed_main()
     start_all = time.time()
@@ -67,7 +67,7 @@ def write_zone_data_randoms(base_dir, out_dir, n_runs):
         x_d,y_d,z_d = spherical_to_cartesian_ast(dat['RA'], dat['DEC'], dat['Z'])
         data_table = Table([dat['TARGETID'], dat['Z'], x_d, y_d, z_d],
                            names = ('TARGETID','Z','X','Y','Zc'))
-        
+
         data_out = os.path.join(out_dir, f'ELG_LOPnotqso_{hemi}_clustering_data.fits.gz')
         tmp_data = data_out.replace('.gz','')
         data_table.write(tmp_data, format = 'fits', overwrite = True)
@@ -80,18 +80,14 @@ def write_zone_data_randoms(base_dir, out_dir, n_runs):
         if not rand_files:
             raise RuntimeError(f'No random files for {hemi}')
 
-        print(f'----- Generating {n_runs} ran samples using n={max(1, os.cpu_count()-1)}')
+        print(f'----- Generating {n_runs} ran samples using n = {max(1, os.cpu_count()-1)}')
         init_t = time.time()
-        with ProcessPoolExecutor(
-            max_workers=max(1, os.cpu_count()-1),
-            initializer=init_worker,
-            initargs=(rand_files, n_data)
-        ) as exe:
-            futures = {
-                exe.submit(process_run, i,
-                           os.path.join(out_dir, f'ELG_LOPnotqso_{hemi}_{i}_clustering_rand.fits.gz')): i
-                for i in range(n_runs)
-            }
+        with ProcessPoolExecutor(max_workers = max(1, os.cpu_count()-1),
+                                 initializer = init_worker,
+                                 initargs = (rand_files, n_data)) as exe:
+            futures = {exe.submit(process_run, i,
+                                  os.path.join(out_dir, f'ELG_LOPnotqso_{hemi}_{i}_clustering_rand.fits.gz')):
+                                      i for i in range(n_runs)}
             for fut in as_completed(futures):
                 run_idx = futures[fut]
                 try:
@@ -111,4 +107,4 @@ if __name__=='__main__':
     parser.add_argument('--out_dir', default='/pscratch/sd/v/vtorresg/cosmic-web/data/dr1/results/')
     parser.add_argument('--n_runs', type=int, default=100)
     args = parser.parse_args()
-    write_zone_data_randoms(args.base_dir, args.out_dir, args.n_runs)
+    write_data_randoms(args.base_dir, args.out_dir, args.n_runs)
