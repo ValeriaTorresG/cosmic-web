@@ -1,10 +1,7 @@
-import os
-import sys
+import os, sys, gzip, shutil
 import numpy as np
 import pandas as pd
 import time as t
-import gzip
-import shutil
 from astropy.table import Table
 from scipy.spatial import Delaunay
 from itertools import combinations
@@ -102,13 +99,10 @@ def run_iterations(df: pd.DataFrame, dr):
 
 def save_results(hemi: str, run: int, df: pd.DataFrame, p_w, H, r_list, out_dir: str):
     final_types = [TYPES[i] for i in np.argmax(p_w, axis=1)]
-    df_out = pd.DataFrame({
-        'TARGETID': df['TARGETID'],
-        'r': r_list,
-        'type': final_types,
-        **{f'p_{t}': p_w[:, i] for i, t in enumerate(TYPES)},
-        'H': H
-    })
+    df_out = pd.DataFrame({'TARGETID': df['TARGETID'],
+                           'r': r_list, 'type': final_types,
+                           **{f'p_{t}': p_w[:, i] for i, t in enumerate(TYPES)},
+                           'H': H})
     path = os.path.join(out_dir, f'{hemi}_run{run}.csv')
     df_out.to_csv(path, index=False)
     return path
@@ -132,7 +126,6 @@ def main():
     out_dir = '/pscratch/sd/v/vtorresg/cosmic-web/data/dr1/entropy/'
     os.makedirs(out_dir, exist_ok=True)
 
-    # Process each zone sequentially, with limited parallelism per zone
     for hemi in HEMIS:
         tasks = [(hemi, run, base_dir, out_dir) for run in range(N_ITER)]
         max_workers = 50#min(4, os.cpu_count() - 1)
@@ -143,11 +136,11 @@ def main():
                 run = futures[fut]
                 try:
                     outp = fut.result()
-                    print(f'[{hemi} run{run}] OK -> {outp}')
+                    print(f'[{hemi} run{run}] done in {outp}')
                 except Exception as e:
                     print(f'ERROR [{hemi} run{run}]: {e}')
 
-    print(f"Total elapsed: {t.time() - start:.2f}s")
+    print(f"Total time: {t.time() - start:.2f}s")
 
 if __name__ == '__main__':
     main()
