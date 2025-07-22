@@ -1,24 +1,33 @@
+#!/usr/bin/env bash
 set -e
 
+# Sitúate en la raíz del repo
 cd "$(dirname "$0")"/..
 
-echo "Running pos,count,pairs"
+# Rutas fijas
+REGION_DIR="/pscratch/sd/v/vtorresg/cosmic-web/data/dr1/regions"
+ENTROPY_DIR="/pscratch/sd/v/vtorresg/cosmic-web/data/dr1/entropy"
+CATALOG_DIR="/pscratch/sd/v/vtorresg/cosmic-web/data/dr1/catalog"
+
+# Asegura que existan
+mkdir -p "$ENTROPY_DIR" "$CATALOG_DIR"
+
+echo "1) Generando posiciones, conteos, pares y clasificación (entropía)…"
+# Este script ya sabe leer de REGION_DIR y escribir en ENTROPY_DIR internamente
 python src/entropy.py
 
+echo
+echo "2) Construyendo catálogos friends-of-friends…"
+# web_catalog.py espera solo base_dir, out_dir, webtype, void_limit, knot_limit
+python src/web_catalog.py \
+    --base_dir   "$ENTROPY_DIR" \
+    --out_dir    "$CATALOG_DIR" \
+    --webtype    all \
+    --void_limit -0.9 \
+    --knot_limit 0.9
 
-RESULTS_DIR="/pscratch/sd/v/vtorresg/cosmic-web/data/dr1/results"
-CATALOGS_DIR="/pscratch/sd/v/vtorresg/cosmic-web/data/dr1/catalogs"
-# mkdir -p "${CATALOGS_DIR}"
-
-# echo "----- Generating catalogs"
-# for rosette in $(seq 0 19); do
-#   echo "-- Rosette ${rosette}"
-#   python src/catalog.py \
-#     --posfile     "${RESULTS_DIR}/rosette_${rosette}_pos.txt" \
-#     --pairfile    "${RESULTS_DIR}/rosette_${rosette}_pairs.txt" \
-#     --countfile   "${RESULTS_DIR}/rosette_${rosette}_counts.txt" \
-#     --webtype      filament \
-#     --catalogfile "${CATALOGS_DIR}/rosette_filament_${rosette}_catalog_all.csv"
-# done
-
-# echo "----- Funcionaaaa, guarda en ${CATALOGS_DIR}"
+echo
+echo "✅ Pipeline completado"
+echo "  • Subregiones filtradas: $REGION_DIR"
+echo "  • Resultados entropía:   $ENTROPY_DIR"
+echo "  • Catálogos finales:     $CATALOG_DIR"
