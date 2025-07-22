@@ -10,11 +10,11 @@ CATALOG_DIR="/pscratch/sd/v/vtorresg/cosmic-web/data/dr1/catalog"
 
 mkdir -p "$ENTROPY_DIR" "$CATALOG_DIR"
 
-echo "1) Generando posiciones, conteos, pares y clasificación (entropía)…"
+echo "Running pre processing, entropy script"
 python src/entropy.py
 
 echo
-echo "2) Construyendo catálogos friends-of-friends…"
+echo "Constructing the web catalog"
 python src/web_catalog.py \
     --base_dir   "$ENTROPY_DIR" \
     --out_dir    "$CATALOG_DIR" \

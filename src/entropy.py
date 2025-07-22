@@ -1,4 +1,4 @@
-import os, time, gzip, shutil, random, sys
+import os, time, gzip, shutil, random, sys, time as t
 from itertools import combinations
 import numpy as np
 import pandas as pd
@@ -13,7 +13,7 @@ from src.classify_web import astra
 
 REGIONS = ['NGC-1', 'NGC-2', 'SGC-3']
 N_ITER = 100
-MAX_WORKERS = 20
+MAX_WORKERS = 50
 
 BASE_DIR = '/pscratch/sd/v/vtorresg/cosmic-web/data/dr1/regions/'
 OUT_DIR = '/pscratch/sd/v/vtorresg/cosmic-web/data/dr1/entropy/'
@@ -70,6 +70,7 @@ def process_task(args):
 
     counts = np.zeros((npts, len(['void','sheet','filament','knot'])), int)
     for _ in range(N_ITER):
+        print(f'Processing {region} run {run} iteration {_+1}/{N_ITER}')
         df_typed, _, _, is_real = astra(df_d.copy(), df_r.copy())
         lbls = df_typed.loc[is_real, 'TYPE'].values
         idxs = [ ['void','sheet','filament','knot'].index(l) for l in lbls ]
@@ -91,6 +92,7 @@ def main():
     os.makedirs(OUT_DIR, exist_ok=True)
     seed()
     tasks = [(r, i) for r in REGIONS for i in range(N_ITER)]
+    init_t = t.time()
     with ProcessPoolExecutor(max_workers=MAX_WORKERS, initializer=seed) as exe:
         futures = {exe.submit(process_task, t): t for t in tasks}
         for fut in as_completed(futures):
@@ -99,6 +101,7 @@ def main():
                 print(f'[{region} run{run}] ->', fut.result())
             except Exception as e:
                 print(f'ERROR [{region} run{run}]:', e)
+    print(f'Everything completed in {t.time() - init_t:.2f} seconds.')
 
 if __name__ == '__main__':
     main()
