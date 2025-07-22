@@ -120,15 +120,9 @@ def write_data_randoms(base_dir, out_dir, n_runs):
 
 
 if __name__=='__main__':
-<<<<<<< HEAD
     parser = argparse.ArgumentParser()
     parser.add_argument('--base_dir', default='/pscratch/sd/v/vtorresg/cosmic-web/data/dr1/raw/')
     parser.add_argument('--out_dir', default='/pscratch/sd/v/vtorresg/cosmic-web/data/dr1/results/')
-=======
-    parsesr = argparse.ArgumentParser()
-    parser.add_argument('--base_dir', default='')
-    parser.add_argument('--out_dir', default='')
->>>>>>> 32fd94bc2f6aeec5ddda0eac3c35d14657218d31
     parser.add_argument('--n_runs', type=int, default=100)
     args = parser.parse_args()
     write_data_randoms(args.base_dir, args.out_dir, args.n_runs)
